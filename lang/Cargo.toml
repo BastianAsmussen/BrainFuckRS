@@ -1,0 +1,13 @@
+[package]
+name = "lang"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["parser"]
+lexer = []
+parser = ["lexer"]
+
+[dependencies]
+thiserror = "1.0.57"
+
