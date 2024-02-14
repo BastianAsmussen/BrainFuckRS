@@ -8,7 +8,9 @@ default = ["interpreter"]
 lexer = []
 parser = ["lexer"]
 interpreter = ["parser"]
+jni = ["interpreter", "dep:jni"]
 
 [dependencies]
 thiserror = "1.0.57"
+jni = { version = "0.21.1", optional = true }
 
