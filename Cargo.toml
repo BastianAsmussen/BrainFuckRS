@@ -8,9 +8,3 @@ anyhow = "1.0.79"
 clap = { version = "4.5.0", features = ["derive"] }
 lang = { path = "lang" }
 
-[workspace]
-resolver = "2"
-members = [
-  "lang",
-]
-

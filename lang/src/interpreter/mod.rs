@@ -1,4 +1,4 @@
-use std::io::Read;
+use std::{fmt::Display, io::Read};
 
 use crate::parser::statements::Statement;
 
@@ -38,6 +38,7 @@ impl<'a> Interpreter<'a> {
         }
     }
 
+    /// Run the interpreter.
     pub fn run(&mut self) {
         for statement in self.ast {
             self.interpret(statement);
@@ -98,5 +99,19 @@ impl<'a> Interpreter<'a> {
                 self.interpret(statement);
             }
         }
+    }
+}
+
+impl Display for Interpreter<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (i, byte) in self.memory.iter().enumerate() {
+            if i == self.pointer {
+                write!(f, "[{byte}]")?;
+            } else {
+                write!(f, " {byte} ")?;
+            }
+        }
+
+        Ok(())
     }
 }
