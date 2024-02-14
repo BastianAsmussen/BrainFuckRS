@@ -1,10 +1,9 @@
-pub mod errors;
 pub mod statements;
 
 use crate::lexer::tokens::kinds::TokenKind;
 use crate::lexer::tokens::Token;
-use crate::parser::errors::ParserError;
 use crate::parser::statements::Statement;
+use crate::utils::errors::LanguageError;
 
 /// The parser.
 ///
@@ -40,12 +39,12 @@ impl<'a> Parser<'a> {
     ///
     /// # Returns
     ///
-    /// * `Result<Vec<Statement>, ParserError>` - The statements produced by the parser.
+    /// * `Result<Vec<Statement>, LanguageError>` - The statements produced by the parser.
     ///
     /// # Errors
     ///
-    /// * `ParserError` - An error occurred while parsing.
-    pub fn parse(&mut self) -> Result<Vec<Statement>, ParserError> {
+    /// * `LanguageError` - An error occurred while parsing.
+    pub fn parse(&mut self) -> Result<Vec<Statement>, LanguageError> {
         let mut statements = Vec::new();
 
         while self.peek().is_some() {
@@ -76,15 +75,15 @@ impl<'a> Parser<'a> {
     ///
     /// # Returns
     ///
-    /// * `Result<Statement, ParserError>` - The statement produced by the parser.
+    /// * `Result<Statement, LanguageError>` - The statement produced by the parser.
     ///
     /// # Errors
     ///
-    /// * `ParserError` - An error occurred while parsing.
-    fn statement(&mut self) -> Result<Statement, ParserError> {
+    /// * `LanguageError` - An error occurred while parsing.
+    fn statement(&mut self) -> Result<Statement, LanguageError> {
         let token = self
             .peek()
-            .ok_or(ParserError::UnexpectedToken(TokenKind::EndOfFile))?;
+            .ok_or(LanguageError::UnexpectedToken(TokenKind::EndOfFile))?;
 
         let statement = match token.kind {
             TokenKind::Plus => Statement::Increment,
@@ -111,7 +110,7 @@ impl<'a> Parser<'a> {
             }
             TokenKind::Comma => Statement::Input,
             TokenKind::Dot => Statement::Output,
-            _ => return Err(ParserError::UnexpectedToken(token.kind)),
+            _ => return Err(LanguageError::UnexpectedToken(token.kind)),
         };
 
         Ok(statement)

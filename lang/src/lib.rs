@@ -4,4 +4,7 @@ pub mod lexer;
 #[cfg(feature = "parser")]
 pub mod parser;
 
-pub mod util;
+#[cfg(feature = "interpreter")]
+pub mod interpreter;
+
+pub mod utils;

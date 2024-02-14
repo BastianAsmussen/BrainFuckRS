@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::lexer::errors::LexerError;
+use crate::utils::errors::LanguageError;
 
 /// All the kinds of tokens the lexer can produce.
 ///
@@ -29,7 +29,7 @@ pub enum TokenKind {
 }
 
 impl TryFrom<char> for TokenKind {
-    type Error = LexerError;
+    type Error = LanguageError;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         let kind = match value {
@@ -41,7 +41,7 @@ impl TryFrom<char> for TokenKind {
             ']' => Self::ClosingBracket,
             ',' => Self::Comma,
             '.' => Self::Dot,
-            _ => return Err(LexerError::UnexpectedCharacter(value)),
+            _ => return Err(LanguageError::UnexpectedCharacter(value)),
         };
 
         Ok(kind)

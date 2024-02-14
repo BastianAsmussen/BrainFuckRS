@@ -1,9 +1,7 @@
-use self::{
-    errors::LexerError,
-    tokens::{kinds::TokenKind, Token},
-};
+use crate::utils::errors::LanguageError;
 
-pub mod errors;
+use self::tokens::{kinds::TokenKind, Token};
+
 pub mod tokens;
 
 /// The lexer.
@@ -45,7 +43,7 @@ impl<'a> Lexer<'a> {
     /// # Errors
     ///
     /// * `LexerError` - An error occurred while lexing.
-    pub fn lex(&mut self) -> Result<Vec<Token>, LexerError> {
+    pub fn lex(&mut self) -> Result<Vec<Token>, LanguageError> {
         let mut tokens = Vec::new();
 
         while let Some(token) = self.next_token()? {
@@ -64,7 +62,7 @@ impl<'a> Lexer<'a> {
     /// # Errors
     ///
     /// * `LexerError` - An error occurred while lexing.
-    fn next_token(&mut self) -> Result<Option<Token>, LexerError> {
+    fn next_token(&mut self) -> Result<Option<Token>, LanguageError> {
         let Some(c) = self.peek() else {
             return Ok(None);
         };
@@ -128,7 +126,7 @@ mod tests {
         let source = "a";
 
         let actual = Lexer::new(source).lex();
-        let expected = Err(LexerError::UnexpectedCharacter('a'));
+        let expected = Err(LanguageError::UnexpectedCharacter('a'));
 
         assert_eq!(actual, expected);
     }
