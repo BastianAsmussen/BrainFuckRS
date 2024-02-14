@@ -124,10 +124,8 @@ mod tests {
     #[test]
     fn test_lex_error() {
         let source = "a";
+        let result = Lexer::new(source).lex();
 
-        let actual = Lexer::new(source).lex();
-        let expected = Err(LanguageError::UnexpectedCharacter('a'));
-
-        assert_eq!(actual, expected);
+        assert!(result.is_err());
     }
 }

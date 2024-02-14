@@ -1,6 +1,8 @@
-use std::{fmt::Display, io::Read};
+use std::io::{Read, Write};
 
-use crate::parser::statements::Statement;
+use crate::{parser::statements::Statement, utils::errors::LanguageError};
+
+pub mod encoder;
 
 /// The size of the memory used by the interpreter.
 pub const MEMORY_SIZE: usize = 1024 * 32;
@@ -10,51 +12,67 @@ pub const MEMORY_SIZE: usize = 1024 * 32;
 /// # Fields
 ///
 /// * `ast` - The AST produced by the parser.
+/// * `io` - The I/O to use.
 /// * `memory` - The memory used by the interpreter.
 /// * `pointer` - The current position in the memory.
 #[derive(Debug)]
-pub struct Interpreter<'a> {
+pub struct Interpreter<'a, R: Read, W: Write> {
     ast: &'a [Statement],
+    io: (&'a mut R, &'a mut W),
     memory: [u8; MEMORY_SIZE],
     pointer: usize,
 }
 
-impl<'a> Interpreter<'a> {
+impl<'a, R: Read, W: Write> Interpreter<'a, R, W> {
     /// Create a new interpreter.
     ///
     /// # Arguments
     ///
+    /// * `io` - The I/O to use.
     /// * `ast` - The AST produced by the parser.
     ///
     /// # Returns
     ///
     /// * `Interpreter` - The new interpreter.
     #[must_use]
-    pub const fn new(ast: &'a [Statement]) -> Self {
+    pub fn new(ast: &'a [Statement], io: (&'a mut R, &'a mut W)) -> Self {
         Self {
             ast,
+            io,
             memory: [0; MEMORY_SIZE],
             pointer: 0,
         }
     }
 
     /// Run the interpreter.
-    pub fn run(&mut self) {
+    ///
+    /// # Returns
+    ///
+    /// * `Result<(), LanguageError>` - The result of running the interpreter.
+    ///
+    /// # Errors
+    ///
+    /// * `LanguageError` - An error occurred while walking the AST.
+    pub fn run(&mut self) -> Result<(), LanguageError> {
         for statement in self.ast {
-            self.interpret(statement);
+            self.interpret(statement)?;
         }
+
+        Ok(())
     }
 
-    fn interpret(&mut self, statement: &Statement) {
+    fn interpret(&mut self, statement: &Statement) -> Result<(), LanguageError> {
         match statement {
             Statement::Increment => self.increment(),
             Statement::Decrement => self.decrement(),
             Statement::MoveLeft => self.move_left(),
             Statement::MoveRight => self.move_right(),
-            Statement::Input => self.input(),
-            Statement::Output => self.output(),
-            Statement::Loop(statements) => self.r#loop(statements),
-        }
+            Statement::Input => self.input()?,
+            Statement::Output => self.output()?,
+            Statement::Loop(statements) => self.r#loop(statements)?,
+        };
+
+        Ok(())
     }
 
     fn increment(&mut self) {
@@ -77,38 +95,27 @@ impl<'a> Interpreter<'a> {
         self.pointer = (self.pointer + 1) % MEMORY_SIZE;
     }
 
-    fn input(&mut self) {
-        let byte = std::io::stdin()
-            .bytes()
-            .next()
-            .and_then(Result::ok)
-            .unwrap_or(0);
+    fn input(&mut self) -> Result<(), LanguageError> {
+        let mut buf = [0; 1];
+        self.io.0.read_exact(&mut buf)?;
 
-        self.memory[self.pointer] = byte;
+        self.memory[self.pointer] = buf[0];
+
+        Ok(())
     }
 
-    fn output(&self) {
-        print!("{}", self.memory[self.pointer] as char);
+    fn output(&mut self) -> Result<(), LanguageError> {
+        let byte = self.memory[self.pointer] as char;
+
+        Ok(write!(self.io.1, "{byte}")?)
     }
 
-    fn r#loop(&mut self, statements: &[Statement]) {
+    fn r#loop(&mut self, statements: &[Statement]) -> Result<(), LanguageError> {
         let start = self.pointer;
 
         while self.memory[start] != 0 {
             for statement in statements {
-                self.interpret(statement);
-            }
-        }
-    }
-}
-
-impl Display for Interpreter<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for (i, byte) in self.memory.iter().enumerate() {
-            if i == self.pointer {
-                write!(f, "[{byte}]")?;
-            } else {
-                write!(f, " {byte} ")?;
+                self.interpret(statement)?;
             }
         }
 

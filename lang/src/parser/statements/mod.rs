@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 // These statements are just brainf*ck statements like +, -, <, >, etc.
 /// The possible statements that can be parsed.
 ///
@@ -19,4 +21,26 @@ pub enum Statement {
     Loop(Vec<Statement>),
     Input,
     Output,
+}
+
+impl Display for Statement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Increment => write!(f, "+"),
+            Self::Decrement => write!(f, "-"),
+            Self::MoveRight => write!(f, ">"),
+            Self::MoveLeft => write!(f, "<"),
+            Self::Loop(statements) => {
+                write!(f, "[")?;
+                for statement in statements {
+                    write!(f, "{statement}")?;
+                }
+                write!(f, "]")?;
+
+                Ok(())
+            }
+            Self::Input => write!(f, ","),
+            Self::Output => write!(f, "."),
+        }
+    }
 }

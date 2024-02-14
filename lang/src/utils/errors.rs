@@ -8,10 +8,13 @@ use crate::lexer::tokens::kinds::TokenKind;
 ///
 /// * `UnexpectedCharacter` - An unexpected character was encountered.
 /// * `UnexpectedToken` - An unexpected token was encountered.
-#[derive(Debug, Error, Eq, PartialEq)]
+/// * `IoError` - An I/O error occurred.
+#[derive(Debug, Error)]
 pub enum LanguageError {
     #[error("Unexpected character: {0}")]
     UnexpectedCharacter(char),
     #[error("Unexpected token: {0}")]
     UnexpectedToken(TokenKind),
+    #[error("I/O error: {0}")]
+    IoError(#[from] std::io::Error),
 }
